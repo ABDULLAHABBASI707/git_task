@@ -1,3 +1,5 @@
+name: "Build & Release"
+
 on:
   pull_request:
     branches:
@@ -8,23 +10,29 @@ on:
       - main
       - master
       - develop
-name: "Build & Release"
+
 jobs:
   build:
     name: Build & Release
     runs-on: macos-latest
+
     steps:
       - uses: actions/checkout@v3
+
       - uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: '17'
+
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           architecture: x64
 
+      # Build Android APK
       - run: flutter build apk --release --split-per-abi
+
+      # Build iOS IPA
       - run: |
           flutter build ios --no-codesign
           cd build/ios/iphoneos
@@ -33,9 +41,31 @@ jobs:
           ln -s ../Runner.app
           cd ..
           zip -r app.ipa Payload
+
+      # Install Firebase CLI
+      - name: Install Firebase Tools
+        run: npm install -g firebase-tools
+
+      # Distribute Android APK to Firebase
+      - name: Distribute Android APK
+        run: |
+          firebase appdistribution:distribute build/app/outputs/apk/release/app-arm64-v8a-release.apk \
+            --app ${{ secrets.FIREBASE_ANDROID_APP_ID }} \
+            --groups "testers" \
+            --token ${{ secrets.FIREBASE_TOKEN }}
+
+      # Distribute iOS IPA to Firebase
+      - name: Distribute iOS IPA
+        run: |
+          firebase appdistribution:distribute build/ios/iphoneos/app.ipa \
+            --app ${{ secrets.FIREBASE_IOS_APP_ID }} \
+            --groups "testers" \
+            --token ${{ secrets.FIREBASE_TOKEN }}
+
+      # Push to GitHub Releases
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
           artifacts: "build/app/outputs/apk/release/*,build/ios/iphoneos/app.ipa"
           tag: v1.0.${{ github.run_number }}
-          token: ${{ secrets.TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}

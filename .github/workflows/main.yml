@@ -32,15 +32,7 @@ jobs:
       # Build Android APK
       - run: flutter build apk --release --split-per-abi
 
-      # Build iOS IPA
-      - run: |
-          flutter build ios --no-codesign
-          cd build/ios/iphoneos
-          mkdir Payload
-          cd Payload
-          ln -s ../Runner.app
-          cd ..
-          zip -r app.ipa Payload
+
 
       # Install Firebase CLI
       - name: Install Firebase Tools

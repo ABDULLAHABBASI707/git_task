@@ -1,4 +1,4 @@
-name: "Build & Release"
+name: Build & Release
 
 on:
   push:
@@ -63,17 +63,12 @@ jobs:
           ln -s ../Runner.app Payload/Runner.app
           zip -r app.ipa Payload
 
-      - name: Setup Firebase service account credentials
-        run: |
-          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}" | base64 --decode > $HOME/firebase-service-account.json
-        shell: bash
-
       - name: Install Firebase CLI
         run: curl -sL https://firebase.tools | bash
 
       - name: Distribute Android APK to Firebase App Distribution
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: $HOME/firebase-service-account.json
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           for apk in build/app/outputs/apk/release/*.apk; do
             echo "Uploading $apk"
@@ -84,7 +79,7 @@ jobs:
 
       - name: Distribute iOS IPA to Firebase App Distribution
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: $HOME/firebase-service-account.json
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           firebase appdistribution:distribute build/ios/iphoneos/app.ipa \
             --app ${{ secrets.FIREBASE_IOS_APP_ID }} \

@@ -39,11 +39,11 @@ jobs:
 
       - name: Create key.properties
         run: |
-          cat > android/key.properties <<EOF
+          cat > android/app/key.properties <<EOF
           storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
           keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
-          storeFile=app/task-keystore.jks
+          storeFile=task-keystore.jks
           EOF
 
       - name: Build Signed APK

@@ -58,7 +58,7 @@ jobs:
           name: Release v1.0.${{ github.run_number }}
           body: "Automated release with signed APK."
 
-      - name: Write Firebase service account JSON
+      - name: Write Firebase service
         run: echo '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}' > $HOME/firebase-service-account.json
 
       - name: Set GOOGLE_APPLICATION_CREDENTIALS env
@@ -73,6 +73,5 @@ jobs:
             echo "Uploading $apk"
             firebase appdistribution:distribute "$apk" \
               --app ${{ secrets.FIREBASE_APP_ID }} \
-              --groups "Testers" \
               --release-notes "CI Build ${{ github.run_number }}"
           done

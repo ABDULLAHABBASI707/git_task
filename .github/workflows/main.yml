@@ -56,14 +56,15 @@ jobs:
           ln -s ../Runner.app Payload/Runner.app
           zip -r app.ipa Payload
 
-      # Decode the service account key
+      # Decode Firebase service account JSON
       - name: Decode Firebase service account key
         run: echo '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}' > ${{ github.workspace }}/firebase_key.json
 
-      # Set the env var for Firebase authentication
-      - name: Set GOOGLE_APPLICATION_CREDENTIALS env var
+      # Set env var for Firebase CLI authentication
+      - name: Set GOOGLE_APPLICATION_CREDENTIALS
         run: echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/firebase_key.json" >> $GITHUB_ENV
 
+      # Install Firebase CLI
       - name: Install Firebase CLI
         run: curl -sL https://firebase.tools | bash
 
@@ -72,7 +73,6 @@ jobs:
         run: |
           firebase appdistribution:distribute build/app/outputs/apk/release/app-arm64-v8a-release.apk \
             --app ${{ secrets.FIREBASE_APP_ID }} \
-            --project YOUR_FIREBASE_PROJECT_ID \
             --groups "testers"
 
       # Upload IPA to Firebase App Distribution
@@ -80,10 +80,9 @@ jobs:
         run: |
           firebase appdistribution:distribute build/ios/iphoneos/app.ipa \
             --app ${{ secrets.FIREBASE_IOS_APP_ID }} \
-            --project YOUR_FIREBASE_PROJECT_ID \
             --groups "testers"
 
-      # Optional: Push APK and IPA to GitHub Releases
+      # Upload to GitHub Release (optional)
       - name: Push APK and IPA to GitHub Releases
         uses: ncipollo/release-action@v1
         with:

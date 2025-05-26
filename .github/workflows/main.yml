@@ -73,6 +73,5 @@ jobs:
             echo "Uploading $apk"
             firebase appdistribution:distribute "$apk" \
               --app ${{ secrets.FIREBASE_APP_ID }} \
-              --groups "Testers" \
               --release-notes "CI Build ${{ github.run_number }}"
           done
